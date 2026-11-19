@@ -1,0 +1,53 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor User
+actor "Community Member" as CommunityMember
+actor Player
+actor "Game Manager" as GameManager
+actor Administrator
+
+CommunityMember --|> User
+Player --|> CommunityMember
+GameManager --|> Player
+Administrator --|> User
+
+usecase "Create Account" as UC1
+usecase "View Profile Information" as UC2
+usecase "View Dashboard" as UC3
+usecase "Create and Manage Events" as UC4
+usecase "Create and Manage Game Schedules" as UC5
+usecase "Join or Leave Rosters" as UC6
+usecase "Create and Manage Teams" as UC7
+usecase "Upload and Analyze Team Data" as UC8
+usecase "Manage User Roles" as UC9
+usecase "Moderate User Accounts" as UC10
+usecase "Integrate Discord Accounts" as UC11
+usecase "View Events and Schedules" as UC12
+usecase "View Team VODs and Statistics" as UC13
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC11
+User --> UC12
+
+CommunityMember --> UC6
+
+Player --> UC13
+
+GameManager --> UC4
+GameManager --> UC5
+GameManager --> UC7
+GameManager --> UC8
+
+Administrator --> UC4
+Administrator --> UC5
+Administrator --> UC9
+Administrator --> UC10
+
+UC7 .> UC6 : <<include>>
+UC8 .> UC13 : <<include>>
+
+@enduml

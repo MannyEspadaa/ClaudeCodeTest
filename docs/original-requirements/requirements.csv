@@ -1,0 +1,41 @@
+id,classification,description,priority
+FREQ1,,"The system shall allow [REDACTED] students to create personal accounts using their official [REDACTED] email, their full name, a username, and a password.",5
+FREQ4,,The system shall require users to verify their valid email address through a verification sent to their inputted email address.,4
+FREQ6,,"The system shall allow users to view their profile details, including full name, username, and account email.",5
+FREQ7,,The system shall allow users to view what game rosters they have joined on their profile page.,4
+FREQ8,,The system shall allow users to view their Discord username on their profile page if they have connected their application account to their Discord account.,3
+FREQ9,,"The system shall allow users to view profiles for other users, including first name, username, joined game rosters, and Discord name if applicable.",4
+FREQ10,,The system shall allow users to view a dashboard interface on the landing page after logging in.,5
+FREQ11,,The system shall allow Game Managers and Admins to create events by giving them a name.,5
+FREQ12,,"The system shall allow created events to be given a date, including day, start time, and end time.",5
+FREQ13,,The system shall allow created events to be given a location it is taking place.,5
+FREQ15,,The system shall allow Game Managers and Admins to delete created events.,5
+FREQ16,,The system shall allow Game Managers and Admins to create schedules for a game.,5
+FREQ17,,The system shall allow game schedules to be edited by Game Managers or Admins.,5
+FREQ18,,The system shall allow all users to view game schedules.,5
+FREQ19,,The system shall allow all users to view all upcoming event details.,5
+FREQ20,,The system shall allow Community Members to join rosters.,5
+FREQ22,,The system shall allow Community Members to leave rosters.,5
+FREQ26,,The system shall allow Game Managers to create shell teams and give them a name.,5
+FREQ27,,The system shall allow Game Managers to modify teams.,5
+FREQ28,,The system shall allow Game Managers to delete shell teams.,5
+FREQ29,,The system shall allow Game Managers to upload VODs.,3
+FREQ30,,The system shall allow Game Managers to upload team data.,3
+FREQ31,,The system shall allow Game Managers to analyze uploaded team data by leaving comments for Players.,3
+FREQ32,,The system shall allow admins to grant Game Manager roles.,5
+FREQ33,,The system shall allow Admins to revoke Game Manager roles.,5
+FREQ34,,The system shall allow Admin users to grant Admin roles.,4
+FREQ36,,The system shall allow Admins to suspend user accounts.,4
+FREQ37,,The system shall allow Admins to remove user accounts.,4
+FREQ38,,The system shall provide a calendar view for game schedules to Community Members and Players within the game's roster.,5
+FREQ40,,The system shall integrate schedules with external calendar services.,1
+FREQ42,,The system shall integrate with Discord by allowing user's Discord usernames to appear in the application.,3
+FREQ43,,The system shall calculate certain team statistics depending on the game based on data inputted by Game Managers or Admins.,4
+FREQ44,,The system shall allow Game Managers to view a team management page for their game.,5
+FREQ45,,The system shall allow Players to view VODs uploaded by Game Managers.,5
+FREQ46,,The system shall allow Players to view team statistics uploaded by Game Managers.,5
+NFREQ1,Performance,The system shall support at least 200 concurrent users.,5
+NFREQ4,Security,The system shall enforce role-based access control.,5
+NFREQ5,Portability,The system shall provide a complete interface for desktop users.,5
+NFREQ7,Performance,The system shall allow users to complete onboarding within 5 minutes.,3
+NFREQ8,Performance,The system shall display the calendar interface and all associated events within three seconds of arriving on the landing page for logged out users.,4
