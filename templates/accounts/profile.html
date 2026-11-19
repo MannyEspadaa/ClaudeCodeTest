@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{% if own %}My profile{% else %}{{ profile_user.username }}{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+  {% if own %}
+  <h1>{{ profile_user.full_name }}</h1>
+  <table>
+    <tr><th>Full name</th><td>{{ profile_user.full_name }}</td></tr>
+    <tr><th>Username</th><td>{{ profile_user.username }}</td></tr>
+    <tr><th>Email</th><td>{{ profile_user.email }}</td></tr>
+    <tr><th>Discord</th><td>{% if profile_user.discord_username %}{{ profile_user.discord_username }}{% else %}<span class="muted">Not connected</span>{% endif %} · <a href="{% url 'discord_connect' %}">Discord settings</a></td></tr>
+    <tr><th>Roles</th><td>{% for r in roles %}<span class="tag">{{ r }}</span>{% endfor %}</td></tr>
+  </table>
+  <p><a href="{% url 'edit_account' %}">Edit account</a></p>
+  {% else %}
+  <h1>{{ profile_user.first_display_name }}</h1>
+  <table>
+    <tr><th>First name</th><td>{{ profile_user.first_display_name }}</td></tr>
+    <tr><th>Username</th><td>{{ profile_user.username }}</td></tr>
+    {% if profile_user.discord_username %}<tr><th>Discord</th><td>{{ profile_user.discord_username }}</td></tr>{% endif %}
+  </table>
+  {% endif %}
+</div>
+<div class="grid">
+  <section class="card"><h2>Game rosters</h2>
+    <ul class="plain">{% for m in rosters %}<li><a href="{% url 'game_detail' m.game.slug %}">{{ m.game.name }}</a></li>{% empty %}<li class="muted">No game rosters joined.</li>{% endfor %}
+    {% for m in pending %}<li>{{ m.game.name }} <span class="tag">pending approval</span></li>{% endfor %}</ul>
+  </section>
+  {% if teams %}<section class="card"><h2>Teams</h2>
+    <ul class="plain">{% for m in teams %}<li><a href="{% url 'team_detail' m.team.pk %}">{{ m.team.name }}</a> ({{ m.team.game.name }})</li>{% endfor %}</ul>
+  </section>{% endif %}
+  {% if managed_games %}<section class="card"><h2>Manages</h2>
+    <ul class="plain">{% for a in managed_games %}<li>{{ a.game.name }}</li>{% endfor %}</ul>
+  </section>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ game.name }} teams{% endblock %}
+{% block content %}
+<h1>{{ game.name }} — team management</h1>
+<div class="grid">
+<section class="card"><h2>Teams</h2>
+<table><tr><th>Team</th><th>Players</th><th></th></tr>
+{% for t in teams %}<tr><td><a href="{% url 'team_detail' t.pk %}">{{ t.name }}</a>{% if t.is_shell %} <span class="tag">shell</span>{% endif %}</td>
+<td>{% for m in t.memberships.all %}{{ m.user.username }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+<td class="actions"><a href="{% url 'edit_team' t.pk %}">Edit</a> <a href="{% url 'manage_analytics' t.pk %}">Analytics</a></td></tr>
+{% empty %}<tr><td colspan="3" class="empty">No teams yet.</td></tr>{% endfor %}</table>
+</section>
+<section class="card"><h2>Create shell team</h2>
+<form method="post" novalidate>{% csrf_token %}{{ form.as_p }}<button type="submit">Create team</button></form>
+</section>
+</div>
+{% endblock %}

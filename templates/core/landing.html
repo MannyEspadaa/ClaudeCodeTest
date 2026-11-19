@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>The hub for our esports program</h1>
+  <p>Join game communities, follow match and practice schedules, and — once you're on a team — review your VODs and statistics.</p>
+  <div class="actions"><a class="button" href="{% url 'register' %}">Create account</a>
+  <a class="button secondary" href="{% url 'login' %}">Sign in</a></div>
+</div>
+{% endblock %}

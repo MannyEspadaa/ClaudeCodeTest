@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Discord integration{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Discord integration</h1>
+  {% if user.discord_username %}
+    <p>Connected as <strong>{{ user.discord_username }}</strong>.</p>
+    <form method="post" action="{% url 'discord_unlink' %}">{% csrf_token %}<button class="secondary" type="submit">Unlink Discord</button></form>
+  {% else %}
+    <p>Connect your Discord account so teammates can find you. You'll be sent to Discord to approve the connection.</p>
+    <form method="post">{% csrf_token %}<button type="submit">Connect Discord</button></form>
+  {% endif %}
+</div>
+{% endblock %}

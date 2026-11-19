@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }}{% endblock %}
+{% block content %}
+<h1>{{ team.name }} <span class="muted">· {{ team.game.name }}</span></h1>
+<p class="actions"><a href="{% url 'team_vods' team.pk %}">VODs</a> <a href="{% url 'team_stats' team.pk %}">Statistics</a>
+{% if can_manage %}<a href="{% url 'manage_analytics' team.pk %}">Manage analytics</a> <a href="{% url 'edit_team' team.pk %}">Edit team</a> <a href="{% url 'delete_team' team.pk %}">Delete team</a>{% endif %}</p>
+{% if team.description %}<div class="card">{{ team.description|linebreaks }}</div>{% endif %}
+<div class="grid">
+<section class="card"><h2>Players</h2>
+<ul class="plain">{% for m in members %}<li><a href="{% url 'public_profile' m.user.username %}">{{ m.user.username }}</a>
+{% if can_manage %}<form class="inline" method="post" action="{% url 'remove_team_member' team.pk m.user.pk %}">{% csrf_token %}<button class="small secondary">Remove</button></form>{% endif %}</li>
+{% empty %}<li class="muted">This is a shell team with no players yet.</li>{% endfor %}</ul>
+</section>
+{% if can_manage %}
+<section class="card"><h2>Add a player from the {{ team.game.name }} community</h2>
+{% if eligible %}
+<form method="post" action="{% url 'add_team_member' team.pk %}" class="actions">{% csrf_token %}
+<select name="user">{% for m in eligible %}<option value="{{ m.user.pk }}">{{ m.user.username }} ({{ m.user.full_name }})</option>{% endfor %}</select>
+<button type="submit">Add to team</button></form>
+{% else %}<p class="muted">Every community member is already on a team.</p>{% endif %}
+</section>
+{% endif %}
+</div>
+{% endblock %}

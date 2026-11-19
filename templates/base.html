@@ -1,0 +1,47 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Esports Hub{% endblock %} · Esports Hub</title>
+  <link rel="stylesheet" href="{% static 'css/hub.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{% url 'landing' %}">Esports Hub</a>
+  {% if nav %}
+  <nav class="mainnav" aria-label="Main">
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <a href="{% url 'calendar' %}">Calendar</a>
+    <a href="{% url 'game_list' %}">Games</a>
+    {% if nav.has_teams %}<a href="{% url 'team_list' %}">Teams</a>{% endif %}
+    {% if nav.can_manage %}
+      <a href="{% url 'manage_events' %}">Events</a>
+      <a href="{% url 'manage_schedules' %}">Schedules</a>
+    {% endif %}
+    {% if nav.is_admin %}
+      <a href="{% url 'manage_users' %}">Users</a>
+      <a href="{% url 'manage_games' %}">Communities</a>
+    {% endif %}
+  </nav>
+  <div class="account">
+    <a href="{% url 'my_profile' %}">{{ user.username }}</a>
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Sign out</button></form>
+  </div>
+  {% else %}
+  <div class="account">
+    <a href="{% url 'login' %}">Sign in</a>
+    <a class="button small" href="{% url 'register' %}">Create account</a>
+  </div>
+  {% endif %}
+</header>
+<main class="page">
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}<li class="msg {{ message.tags }}">{{ message }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

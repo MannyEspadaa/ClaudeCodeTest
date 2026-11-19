@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Authorize Discord{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Authorize Esports Hub</h1>
+  <p class="muted">Local Discord authorization (no Discord application is configured on this server).</p>
+  {% if error %}<p class="msg error">{{ error }}</p>{% endif %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="state" value="{{ state }}">
+    <p><label for="du">Discord username</label><input id="du" type="text" name="discord_username" maxlength="32"></p>
+    <div class="actions"><button type="submit" name="approve">Authorize</button><button class="secondary" type="submit" name="deny">Cancel</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }} statistics{% endblock %}
+{% block content %}
+<h1>{{ team.name }} — statistics</h1>
+<p class="actions"><a href="{% url 'team_vods' team.pk %}">VODs</a>{% if can_manage %} <a href="{% url 'manage_analytics' team.pk %}">Manage analytics</a>{% endif %}</p>
+{% if stats and stats.matches_played %}
+<div class="card stat-row">
+  <div class="stat"><div class="value">{{ stats.matches_played }}</div><div class="label">Matches</div></div>
+  <div class="stat"><div class="value">{{ stats.wins }}–{{ stats.losses }}–{{ stats.draws }}</div><div class="label">W–L–D</div></div>
+  <div class="stat"><div class="value">{{ stats.win_rate }}%</div><div class="label">Win rate</div></div>
+  <div class="stat"><div class="value">{{ stats.avg_score_for }}</div><div class="label">Avg score for</div></div>
+  <div class="stat"><div class="value">{{ stats.avg_score_against }}</div><div class="label">Avg score against</div></div>
+  <div class="stat"><div class="value">{{ stats.point_differential }}</div><div class="label">Point differential</div></div>
+</div>
+<section class="card"><h2>Recent matches</h2><table>
+<tr><th>Date</th><th>Opponent</th><th>Result</th><th>Score</th></tr>
+{% for r in recent %}<tr><td>{{ r.match_date }}</td><td>{{ r.opponent }}</td><td>{{ r.get_result_display }}</td><td>{{ r.score_for }}–{{ r.score_against }}</td></tr>{% endfor %}
+</table></section>
+{% else %}<p class="card empty">No statistics available for this team yet.</p>{% endif %}
+{% if general_comments or uploads %}
+<section class="card"><h2>Notes from your Game Manager</h2>
+<ul class="plain">{% for c in general_comments %}<li>{{ c.body }} <span class="muted">— {{ c.author|default:"Game Manager" }}</span></li>{% endfor %}
+{% for u in uploads %}{% for c in u.comments.all %}<li><span class="tag">{{ u.original_filename }}</span>{{ c.body }} <span class="muted">— {{ c.author|default:"Game Manager" }}</span></li>{% endfor %}{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

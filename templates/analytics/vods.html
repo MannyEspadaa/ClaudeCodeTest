@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }} VODs{% endblock %}
+{% block content %}
+<h1>{{ team.name }} — VODs</h1>
+<p class="actions"><a href="{% url 'team_stats' team.pk %}">Statistics</a>{% if can_manage %} <a href="{% url 'manage_analytics' team.pk %}">Manage analytics</a>{% endif %}</p>
+{% for v in vods %}
+<section class="card"><h2><a href="{{ v.url }}" target="_blank" rel="noopener noreferrer">{{ v.title }}</a></h2>
+<p class="muted">{% if v.played_on %}Played {{ v.played_on }} · {% endif %}added {{ v.created_at|date:"M j, Y" }}</p>
+{% for c in v.comments.all %}<p class="msg">{{ c.body }} <span class="muted">— {{ c.author|default:"Game Manager" }}</span></p>{% endfor %}
+</section>
+{% empty %}<p class="card empty">No VODs available for this team yet.</p>{% endfor %}
+{% endblock %}

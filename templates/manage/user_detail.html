@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ target.username }}{% endblock %}
+{% block content %}
+<h1>{{ target.full_name }} <span class="muted">@{{ target.username }}</span></h1>
+<div class="grid">
+<section class="card"><h2>Account</h2>
+  <table>
+    <tr><th>Email</th><td>{{ target.email }} {% if not target.email_verified %}<span class="tag">unverified</span>{% endif %}</td></tr>
+    <tr><th>Status</th><td>{{ target.get_status_display }}{% if target.status_reason %} — {{ target.status_reason }}{% endif %}</td></tr>
+    <tr><th>Roles</th><td>{% for r in roles %}<span class="tag">{{ r }}</span>{% empty %}—{% endfor %}</td></tr>
+  </table>
+</section>
+<section class="card"><h2>Roles</h2>
+  <h3>Game Manager</h3>
+  <ul class="plain">{% for a in assignments %}<li>{{ a.game.name }}
+    <form class="inline" method="post" action="{% url 'manage_user_action' target.pk 'revoke_gm' %}">{% csrf_token %}<input type="hidden" name="game" value="{{ a.game.pk }}"><button class="small secondary">Revoke</button></form></li>
+  {% empty %}<li class="muted">Not a Game Manager.</li>{% endfor %}</ul>
+  <form method="post" action="{% url 'manage_user_action' target.pk 'grant_gm' %}" class="actions">{% csrf_token %}{{ grant_form.game }}<button class="small">Grant Game Manager</button></form>
+  <h3>Administrator</h3>
+  <form method="post" action="{% url 'manage_user_action' target.pk target.is_administrator|yesno:'revoke_admin,grant_admin' %}">{% csrf_token %}
+    <button class="small {% if target.is_administrator %}secondary{% endif %}">{% if target.is_administrator %}Revoke Administrator{% else %}Grant Administrator{% endif %}</button></form>
+</section>
+<section class="card"><h2>Moderation</h2>
+  {% if target.status == "active" %}
+  <form method="post" action="{% url 'manage_user_action' target.pk 'suspend' %}">{% csrf_token %}{{ moderation_form.as_p }}
+    <div class="actions"><button class="secondary">Suspend</button>
+    <button class="danger" formaction="{% url 'manage_user_action' target.pk 'remove' %}">Remove account</button></div></form>
+  {% else %}
+  <form method="post" action="{% url 'manage_user_action' target.pk 'reactivate' %}">{% csrf_token %}<button>Reactivate</button></form>
+  {% endif %}
+</section>
+</div>
+<section class="card"><h2>History</h2>
+<ul class="plain">{% for e in log %}<li>{{ e.created_at|date:"Y-m-d H:i" }} · {{ e.action }} {{ e.detail }} <span class="muted">by {{ e.actor|default:"system" }}</span></li>{% empty %}<li class="muted">No changes recorded.</li>{% endfor %}</ul>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1>Users &amp; roles</h1>
+<form method="get" class="card actions"><input type="search" name="q" value="{{ q }}" placeholder="Search name, username or email" style="max-width:360px"><button type="submit">Search</button> <a href="{% url 'audit_log' %}">Audit log</a></form>
+<div class="card"><table>
+  <tr><th>Username</th><th>Name</th><th>Email</th><th>Status</th><th>Verified</th><th>Admin</th></tr>
+  {% for u in users %}<tr><td><a href="{% url 'manage_user' u.pk %}">{{ u.username }}</a></td><td>{{ u.full_name }}</td><td>{{ u.email }}</td><td>{{ u.get_status_display }}</td><td>{{ u.email_verified|yesno:"Yes,No" }}</td><td>{{ u.is_administrator|yesno:"Yes," }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="empty">No users found.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

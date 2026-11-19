@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Manage schedules{% endblock %}
+{% block content %}
+<div class="actions"><h1>Schedule management</h1><a class="button small" href="{% url 'schedule_create' %}">Create schedule</a></div>
+<div class="card"><table>
+<tr><th>Entry</th><th>Game / team</th><th>Date</th><th>Time</th><th>Location</th><th>Calendar</th><th></th></tr>
+{% for s in entries %}<tr><td><span class="tag">{{ s.get_kind_display }}</span>{{ s.title }}{% if s.opponent %} vs {{ s.opponent }}{% endif %}</td>
+<td>{{ s.game.name }}{% if s.team %} / {{ s.team.name }}{% endif %}</td><td>{{ s.date }}</td><td>{{ s.start_time|time:"g:i A" }}–{{ s.end_time|time:"g:i A" }}</td><td>{{ s.location }}</td>
+<td><span class="tag {{ s.sync_status }}" title="{{ s.sync_message }}">{{ s.get_sync_status_display }}</span>
+{% if s.sync_status != "synced" %}<form class="inline" method="post" action="{% url 'schedule_resync' s.pk %}">{% csrf_token %}<button class="small secondary">Retry sync</button></form>{% endif %}</td>
+<td class="actions"><a href="{% url 'schedule_edit' s.pk %}">Edit</a> <a href="{% url 'schedule_delete' s.pk %}">Delete</a></td></tr>
+{% empty %}<tr><td colspan="7" class="empty">No schedules yet.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

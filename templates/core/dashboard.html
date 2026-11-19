@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.first_display_name }}</h1>
+<p class="muted">Your roles: {% for r in roles %}<span class="tag">{{ r }}</span>{% endfor %}</p>
+<div class="grid">
+  <section class="card" aria-labelledby="ev">
+    <h2 id="ev">Upcoming events</h2>
+    <ul class="plain">{% for e in events %}<li><strong>{{ e.name }}</strong> — {{ e.date|date:"D M j" }}, {{ e.start_time|time:"g:i A" }} · {{ e.location }}</li>
+    {% empty %}<li class="muted">No upcoming events.</li>{% endfor %}</ul>
+  </section>
+  <section class="card" aria-labelledby="sc">
+    <h2 id="sc">Upcoming schedule</h2>
+    <ul class="plain">{% for s in schedules %}<li><span class="tag">{{ s.get_kind_display }}</span><strong>{{ s.title }}</strong>{% if s.team %} ({{ s.team.name }}){% endif %} — {{ s.date|date:"D M j" }}, {{ s.start_time|time:"g:i A" }}</li>
+    {% empty %}<li class="muted">Nothing scheduled.</li>{% endfor %}</ul>
+    <p><a href="{% url 'calendar' %}">Open calendar</a></p>
+  </section>
+  <section class="card" aria-labelledby="ro">
+    <h2 id="ro">My game rosters</h2>
+    <ul class="plain">{% for m in rosters %}<li><a href="{% url 'game_detail' m.game.slug %}">{{ m.game.name }}</a>{% if m.status == "pending" %} <span class="tag">pending</span>{% endif %}</li>
+    {% empty %}<li class="muted">You haven't joined a game roster yet. <a href="{% url 'game_list' %}">Browse games</a></li>{% endfor %}</ul>
+  </section>
+  {% if teams %}
+  <section class="card" aria-labelledby="tm">
+    <h2 id="tm">My teams</h2>
+    <ul class="plain">{% for t in teams %}<li><a href="{% url 'team_detail' t.pk %}">{{ t.name }}</a> ({{ t.game.name }}) · <a href="{% url 'team_vods' t.pk %}">VODs</a> · <a href="{% url 'team_stats' t.pk %}">Statistics</a></li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+  {% if managed_games %}
+  <section class="card" aria-labelledby="gm">
+    <h2 id="gm">Game Manager</h2>
+    {% if pending_requests %}<p><span class="tag">{{ pending_requests }} roster request{{ pending_requests|pluralize }} waiting</span></p>{% endif %}
+    <ul class="plain">{% for g in managed_games %}<li>{{ g.name }} · <a href="{% url 'manage_teams' g.slug %}">Teams</a> · <a href="{% url 'game_detail' g.slug %}">Roster</a></li>{% endfor %}</ul>
+    <p class="actions"><a href="{% url 'manage_events' %}">Manage events</a> <a href="{% url 'manage_schedules' %}">Manage schedules</a></p>
+  </section>
+  {% endif %}
+  {% if is_admin %}
+  <section class="card" aria-labelledby="ad">
+    <h2 id="ad">Administration</h2>
+    <p class="actions"><a href="{% url 'manage_users' %}">Users &amp; roles</a> <a href="{% url 'manage_games' %}">Game communities</a> <a href="{% url 'audit_log' %}">Audit log</a></p>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

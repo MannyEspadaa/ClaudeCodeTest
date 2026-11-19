@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Games{% endblock %}
+{% block content %}
+<h1>Game communities</h1>
+<div class="grid">
+{% for row in games %}
+<section class="card">
+  <h2><a href="{% url 'game_detail' row.game.slug %}">{{ row.game.name }}</a></h2>
+  <p class="muted">{{ row.game.description|default:"" }}</p>
+  <p>{{ row.count }} member{{ row.count|pluralize }}{% if row.game.roster_capacity %} of {{ row.game.roster_capacity }}{% endif %}</p>
+  {% if row.membership %}<span class="tag">{% if row.membership.status == "pending" %}Request pending{% else %}On roster{% endif %}</span>
+  {% else %}<form method="post" action="{% url 'join_game' row.game.slug %}">{% csrf_token %}<button class="small">Join roster</button></form>{% endif %}
+</section>
+{% empty %}<p class="empty card">No game communities have been set up yet.</p>{% endfor %}
+</div>
+{% endblock %}

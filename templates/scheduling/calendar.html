@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<h1>Events &amp; schedules</h1>
+<form method="get" class="card actions">
+  <a class="button secondary small" href="?from={{ prev|date:'Y-m-d' }}&game={{ game_id }}">← Earlier</a>
+  <strong>{{ start|date:"M j" }} – {{ end|date:"M j, Y" }}</strong>
+  <a class="button secondary small" href="?from={{ next|date:'Y-m-d' }}&game={{ game_id }}">Later →</a>
+  <input type="hidden" name="from" value="{{ start|date:'Y-m-d' }}">
+  <select name="game" style="max-width:220px" onchange="this.form.submit()"><option value="">All games</option>
+  {% for g in games %}<option value="{{ g.pk }}" {% if game_id == g.pk|stringformat:"d" %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+  <noscript><button class="small">Filter</button></noscript>
+</form>
+<div class="card">
+{% for day, items in by_day.items %}
+<div class="day"><h3>{{ day|date:"l, F j" }}</h3>
+<table>{% for i in items %}<tr><td style="width:150px">{{ i.start_time|time:"g:i A" }}–{{ i.end_time|time:"g:i A" }}</td>
+<td><span class="tag">{{ i.kind_label }}</span><strong>{{ i.name }}</strong>{% if i.opponent %} vs {{ i.opponent }}{% endif %}</td>
+<td>{% if i.team %}{{ i.team.name }}{% elif i.game %}{{ i.game.name }}{% else %}Program-wide{% endif %}</td><td>{{ i.location }}</td></tr>{% endfor %}</table>
+</div>
+{% empty %}<p class="empty">No upcoming events or schedules in this period.</p>{% endfor %}
+</div>
+<p class="muted">Subscribe in Google, Outlook or Apple Calendar: <code>{{ feed_url }}</code></p>
+{% endblock %}
