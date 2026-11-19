@@ -47,6 +47,9 @@ model User {
   teamMemberships    TeamMembership[]
   rosterRequests     RosterRequest[]         @relation("Requester")
   decidedRequests    RosterRequest[]         @relation("Decider")
+  events             Event[]
+  scheduleEntries    ScheduleEntry[]
+  announcements      Announcement[]
 }
 
 model Session {
@@ -120,9 +123,12 @@ model Game {
   status    GameStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
 
-  members  CommunityMembership[]
-  managers GameManagerAssignment[]
-  teams    Team[]
+  members         CommunityMembership[]
+  managers        GameManagerAssignment[]
+  teams           Team[]
+  events          Event[]
+  scheduleEntries ScheduleEntry[]
+  announcements   Announcement[]
 }
 
 model CommunityMembership {
@@ -162,9 +168,10 @@ model Team {
   season        String?
   createdAt     DateTime   @default(now())
 
-  game     Game             @relation(fields: [gameId], references: [id], onDelete: Restrict)
-  members  TeamMembership[]
-  requests RosterRequest[]
+  game            Game             @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  members         TeamMembership[]
+  requests        RosterRequest[]
+  scheduleEntries ScheduleEntry[]
 
   @@unique([gameId, name])
 }
@@ -197,4 +204,82 @@ model RosterRequest {
 
   @@index([teamId, status])
   @@index([userId, status])
+}
+
+// ───────────── Phase 3: events, schedules, announcements ─────────────
+
+/// FREQ64 / baseline C5.
+enum Visibility {
+  PUBLIC  // anyone, including logged-out visitors (NFREQ8)
+  MEMBERS // any logged-in user (FREQ18, FREQ19)
+  TEAM    // only the entry's team, its game's managers and admins
+}
+
+enum ScheduleType {
+  MATCH
+  SCRIM
+  PRACTICE
+  OTHER
+}
+
+/// FREQ11-15, 54. gameId null = global event (Admin only).
+model Event {
+  id          String     @id @default(cuid())
+  gameId      String?
+  name        String
+  description String?
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime
+  visibility  Visibility @default(PUBLIC)
+  createdById String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  game      Game? @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([startsAt])
+  @@index([gameId, startsAt])
+}
+
+/// FREQ16-18, 60. Belongs to a game, optionally to one of its teams.
+model ScheduleEntry {
+  id          String       @id @default(cuid())
+  gameId      String
+  teamId      String?
+  type        ScheduleType
+  title       String
+  opponent    String?
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime
+  visibility  Visibility
+  result      String?
+  createdById String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  game      Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  team      Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([startsAt])
+  @@index([teamId, startsAt])
+  @@index([gameId, startsAt])
+}
+
+/// FREQ63. gameId null = global (Admin only).
+model Announcement {
+  id        String   @id @default(cuid())
+  gameId    String?
+  title     String
+  body      String
+  authorId  String?
+  createdAt DateTime @default(now())
+
+  game   Game? @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }

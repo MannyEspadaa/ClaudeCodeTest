@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useFormStatus } from "react-dom";
 import type { FormState } from "@/app/actions/form-state";
 
@@ -23,7 +24,7 @@ export function Field({
   required?: boolean;
 }) {
   const errors = state?.fieldErrors?.[name];
-  const id = `field-${name}`;
+  const id = `${useId()}-${name}`;
   const describedBy = [hint && `${id}-hint`, errors && `${id}-error`].filter(Boolean).join(" ") || undefined;
   return (
     <div className="flex flex-col gap-1">

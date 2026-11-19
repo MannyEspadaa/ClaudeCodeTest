@@ -34,7 +34,7 @@ test("admin sets up a game, member requests a roster spot, GM approves, outsider
 
   // Player joins the community and requests a spot.
   await loginAs(page, player.email);
-  await page.getByRole("link", { name: "Games" }).click();
+  await page.getByRole("link", { name: "Games", exact: true }).click();
   await main(page).getByRole("listitem").filter({ hasText: gameName }).getByRole("button", { name: "Join community" }).click();
   await main(page).getByRole("link", { name: gameName }).click();
   await main(page).getByRole("button", { name: "Request to join" }).click();

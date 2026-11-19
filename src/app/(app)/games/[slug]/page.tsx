@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/server/auth/current-user";
 import { getCommunityPage } from "@/server/services/community-service";
+import { listCalendarItems } from "@/server/services/calendar-service";
+import { listAnnouncements } from "@/server/services/announcement-service";
+import { Agenda } from "@/components/calendar";
+import { AnnouncementList } from "@/components/announcements";
 import {
   cancelRequestAction,
   joinCommunityAction,
@@ -22,6 +26,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ slug
   if (res.forbidden) return null; // getCommunityPage never forbids; it limits what it returns
   const page = res.data;
   const archived = page.game.status === "ARCHIVED";
+  const now = new Date();
+  const [upcoming, news] = await Promise.all([
+    listCalendarItems(ctx, { from: now, to: new Date(now.getTime() + 30 * 86_400_000), gameId: page.game.id, limit: 10 }),
+    listAnnouncements(ctx, { gameId: page.game.id, limit: 5 }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,6 +64,15 @@ export default async function CommunityPage({ params }: { params: Promise<{ slug
           </>
         }
       />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Upcoming (30 days)">
+          <Agenda items={upcoming} empty="Nothing scheduled." />
+        </Section>
+        <Section title="Announcements">
+          {page.canView ? <AnnouncementList items={news} compact /> : <p className="text-sm text-muted">Join to see announcements.</p>}
+        </Section>
+      </div>
 
       {!page.canView ? (
         <Section title="Teams">

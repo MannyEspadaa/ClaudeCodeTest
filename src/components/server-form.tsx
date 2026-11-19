@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import type { FormState } from "@/app/actions/form-state";
 import { idle } from "@/app/actions/form-state";
 import { Field, FormMessage, SubmitButton } from "./form";
@@ -32,9 +32,16 @@ export function ServerForm({
   resetOnSuccess?: boolean;
   layout?: "stack" | "grid";
 }) {
-  const [state, formAction] = useActionState(action, idle);
-  // Remount inputs after a successful create so they clear.
-  const key = resetOnSuccess && state.status === "success" ? state.message : "form";
+  // React resets a form after its action runs, and <select> elements don't reliably restore
+  // changed defaultValues. Remount the fields on every response (nonce) so they show exactly
+  // what the server echoed back, or clear after a successful create.
+  const [state, formAction] = useActionState(
+    async (prev: FormState & { nonce?: number }, form: FormData) => ({ ...(await action(prev, form)), nonce: Math.random() }),
+    idle as FormState & { nonce?: number },
+  );
+  const cleared = resetOnSuccess && state.status === "success";
+  const key = state.nonce ?? "initial";
+  const fieldState = cleared ? { status: "idle" as const } : state;
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       <FormMessage state={state} />
@@ -43,10 +50,15 @@ export function ServerForm({
       ))}
       <div key={key} className={layout === "grid" ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>
         {fields.map((f) =>
-          f.options ? (
-            <SelectField key={f.name} def={f} state={state} />
+          f.type === "checkbox" ? (
+            <label key={f.name} className="flex items-center gap-2 text-sm sm:col-span-2">{/* implicit label */}
+              <input type="checkbox" name={f.name} defaultChecked={f.defaultValue === "on"} className="h-4 w-4" />
+              {f.label}
+            </label>
+          ) : f.options ? (
+            <SelectField key={f.name} def={f} state={fieldState} />
           ) : f.rows ? (
-            <TextAreaField key={f.name} def={f} state={state} />
+            <TextAreaField key={f.name} def={f} state={fieldState} />
           ) : (
             <Field
               key={f.name}
@@ -56,7 +68,7 @@ export function ServerForm({
               hint={f.hint}
               required={f.required ?? true}
               defaultValue={f.defaultValue}
-              state={resetOnSuccess && state.status === "success" ? undefined : state}
+              state={fieldState}
             />
           ),
         )}
@@ -73,7 +85,7 @@ const inputClass =
 
 function SelectField({ def, state }: { def: FieldDef; state: FormState }) {
   const errors = state.fieldErrors?.[def.name];
-  const id = `field-${def.name}`;
+  const id = `${useId()}-${def.name}`;
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-sm font-medium">
@@ -94,7 +106,7 @@ function SelectField({ def, state }: { def: FieldDef; state: FormState }) {
 
 function TextAreaField({ def, state }: { def: FieldDef; state: FormState }) {
   const errors = state.fieldErrors?.[def.name];
-  const id = `field-${def.name}`;
+  const id = `${useId()}-${def.name}`;
   return (
     <div className="flex flex-col gap-1 sm:col-span-2">
       <label htmlFor={id} className="text-sm font-medium">

@@ -1,7 +1,10 @@
 import Link from "next/link";
 
-export function TeamTabs({ teamId, active }: { teamId: string; active: "roster" }) {
-  const tabs = [{ key: "roster", label: "Roster", href: `/teams/${teamId}` }];
+export function TeamTabs({ teamId, active }: { teamId: string; active: "roster" | "schedule" }) {
+  const tabs = [
+    { key: "roster", label: "Roster", href: `/teams/${teamId}` },
+    { key: "schedule", label: "Schedule", href: `/teams/${teamId}/schedule` },
+  ];
   return (
     <nav aria-label="Team sections" className="flex gap-2 border-b border-border">
       {tabs.map((t) => (

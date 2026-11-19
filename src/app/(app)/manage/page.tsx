@@ -16,7 +16,20 @@ export default async function ManagePage() {
 
   return (
     <>
-      <PageHeader title="Team management" subtitle="Create teams, review roster requests and manage players." />
+      <PageHeader
+        title="Team management"
+        subtitle="Create teams, review roster requests and manage players."
+        actions={
+          <>
+            <Link href="/manage/schedule" className="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
+              Schedules & events
+            </Link>
+            <Link href="/announcements" className="rounded-md border border-border px-3 py-1.5 text-sm font-medium">
+              Announcements
+            </Link>
+          </>
+        }
+      />
       {games.length === 0 && <Empty>No games yet. An Admin can add games under Admin → Games.</Empty>}
       <div className="flex flex-col gap-6">
         {games.map((g) => (

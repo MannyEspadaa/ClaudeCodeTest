@@ -28,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {user ? (
                 <>
                   <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/calendar">Calendar</Link>
                   <Link href="/games">Games</Link>
                   {canManage && <Link href="/manage">Manage</Link>}
                   {ctx?.isAdmin && <Link href="/admin">Admin</Link>}
