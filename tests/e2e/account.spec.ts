@@ -52,7 +52,7 @@ test("login is refused until the email is verified", async ({ page }) => {
 test("registration shows validation, domain and duplicate-email errors", async ({ page }) => {
   await page.goto("/register");
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page.getByText("Enter a valid email address.")).toBeVisible();
+  await expect(page.getByText("Email is required.")).toBeVisible();
   await expect(page.getByText("Password must be at least 10 characters.")).toBeVisible();
 
   await register(page, { email: "x@gmail.com", fullName: "X", username: `x_${unique()}` });

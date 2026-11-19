@@ -13,15 +13,16 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   return token ? validateSessionToken(token) : null;
 });
 
+/** Per-request cached authorization context (null when signed out). */
+export const getActor = cache(async (): Promise<AuthzContext | null> => {
+  const user = await getCurrentUser();
+  return user ? loadAuthzContext(user) : null;
+});
+
 export async function requireUser(): Promise<{ user: SessionUser; ctx: AuthzContext }> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  return { user, ctx: await loadAuthzContext(user) };
-}
-
-export async function getActor(): Promise<AuthzContext | null> {
-  const user = await getCurrentUser();
-  return user ? loadAuthzContext(user) : null;
+  return { user, ctx: (await getActor())! };
 }
 
 export async function setSessionCookie(token: string, expiresAt: Date) {

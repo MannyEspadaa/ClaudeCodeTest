@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Test workers inherit this, so direct DB helpers (tests/e2e/db.ts) use the e2e database.
+process.loadEnvFile(".env.e2e");
+
 const PORT = 3100;
 
 export default defineConfig({

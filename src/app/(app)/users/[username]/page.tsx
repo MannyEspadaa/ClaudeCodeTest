@@ -5,6 +5,9 @@ import { authorize } from "@/server/authz/context";
 import { can } from "@/server/authz/policy";
 import { db } from "@/server/db";
 import { getPublicProfile } from "@/server/services/account-service";
+import { getMemberships } from "@/server/services/community-service";
+import { MembershipList } from "@/components/memberships";
+import { Section } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Profile · Esports Hub" };
 
@@ -15,11 +18,13 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
 
   const target = await db.user.findUnique({ where: { usernameKey: username.toLowerCase() }, select: { id: true } });
   if (!target) notFound();
-  const resource = { type: "user" as const, userId: target.id };
+  const memberships = await getMemberships(target.id);
+  const resource = { type: "user" as const, userId: target.id, gameIds: memberships.communities.map((c) => c.id) };
   authorize(ctx, "profile.view", resource);
 
   const profile = await getPublicProfile(username, { includePii: can(ctx, "profile.viewPii", resource) });
   if (!profile) notFound();
+  const linkTeams = (t: { id: string; game: { id: string } }) => can(ctx, "team.view", { type: "team", teamId: t.id, gameId: t.game.id });
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
@@ -36,9 +41,10 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
         )}
         <dt className="text-muted">Member since</dt>
         <dd>{profile.memberSince.toLocaleDateString("en-US", { dateStyle: "long" })}</dd>
-        <dt className="text-muted">Communities & teams</dt>
-        <dd>None yet</dd>
       </dl>
+      <Section title="Communities & teams">
+        <MembershipList data={memberships} linkTeams={linkTeams} />
+      </Section>
     </div>
   );
 }

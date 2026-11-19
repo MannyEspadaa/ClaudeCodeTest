@@ -55,13 +55,27 @@ export function Field({
   );
 }
 
-export function SubmitButton({ children }: { children: React.ReactNode }) {
+const VARIANTS = {
+  primary: "bg-accent text-accent-fg hover:opacity-90",
+  secondary: "border border-border bg-surface hover:bg-bg",
+  danger: "border border-danger/50 text-danger hover:bg-danger/10",
+} as const;
+
+export function SubmitButton({
+  children,
+  variant = "primary",
+  size = "md",
+}: {
+  children: React.ReactNode;
+  variant?: keyof typeof VARIANTS;
+  size?: "sm" | "md";
+}) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-accent px-4 py-2 font-medium text-accent-fg hover:opacity-90 disabled:opacity-60"
+      className={`rounded-md font-medium disabled:opacity-60 ${VARIANTS[variant]} ${size === "sm" ? "px-3 py-1.5 text-sm" : "px-4 py-2"}`}
     >
       {pending ? "Working…" : children}
     </button>

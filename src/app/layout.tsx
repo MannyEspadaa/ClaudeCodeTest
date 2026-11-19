@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCurrentUser } from "@/server/auth/current-user";
+import { getActor, getCurrentUser } from "@/server/auth/current-user";
 import { logoutAction } from "@/app/actions/auth";
 import "./globals.css";
 
@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  const ctx = await getActor();
+  const canManage = !!ctx && (ctx.isAdmin || ctx.managedGameIds.size > 0);
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
@@ -22,10 +24,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Link href={user ? "/dashboard" : "/"} className="font-semibold">
               Esports Hub
             </Link>
-            <div className="ml-auto flex items-center gap-4 text-sm">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm">
               {user ? (
                 <>
                   <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/games">Games</Link>
+                  {canManage && <Link href="/manage">Manage</Link>}
+                  {ctx?.isAdmin && <Link href="/admin">Admin</Link>}
                   <Link href="/profile">{user.username}</Link>
                   <form action={logoutAction}>
                     <button type="submit" className="text-muted hover:text-fg">

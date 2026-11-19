@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/server/auth/current-user";
 import { getOwnProfile } from "@/server/services/account-service";
+import { getMemberships } from "@/server/services/community-service";
+import { MembershipList } from "@/components/memberships";
+import { Section } from "@/components/ui";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "Your profile · Esports Hub" };
@@ -8,7 +11,7 @@ export const metadata: Metadata = { title: "Your profile · Esports Hub" };
 // UC-2 / FREQ6 view, FREQ49 edit.
 export default async function ProfilePage() {
   const { user } = await requireUser();
-  const profile = await getOwnProfile(user.id);
+  const [profile, memberships] = await Promise.all([getOwnProfile(user.id), getMemberships(user.id)]);
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-8">
       <h1 className="text-3xl font-semibold">Your profile</h1>
@@ -20,6 +23,9 @@ export default async function ProfilePage() {
         <dt className="text-muted">Public profile</dt>
         <dd>/users/{profile.username}</dd>
       </dl>
+      <Section title="Communities & teams">
+        <MembershipList data={memberships} linkTeams={() => true} />
+      </Section>
       <section className="rounded-xl border border-border bg-surface p-5">
         <h2 className="mb-4 font-semibold">Edit details</h2>
         <ProfileForm fullName={profile.fullName} username={profile.username} />

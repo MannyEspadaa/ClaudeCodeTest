@@ -40,6 +40,13 @@ model User {
   sessions    Session[]
   emailTokens EmailToken[]
   auditEvents AuditLog[]   @relation("AuditActor")
+
+  communities        CommunityMembership[]
+  managedGames       GameManagerAssignment[] @relation("ManagedBy")
+  assignedManagers   GameManagerAssignment[] @relation("AssignedBy")
+  teamMemberships    TeamMembership[]
+  rosterRequests     RosterRequest[]         @relation("Requester")
+  decidedRequests    RosterRequest[]         @relation("Decider")
 }
 
 model Session {
@@ -83,4 +90,111 @@ model AuditLog {
 
   @@index([targetType, targetId])
   @@index([createdAt])
+}
+
+// ───────────── Phase 2: games, communities, teams, rosters ─────────────
+
+enum GameStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeamStatus {
+  SHELL
+  ACTIVE
+  ARCHIVED
+}
+
+enum RosterRequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CANCELLED
+}
+
+/// A supported title. Each Game has exactly one Game Community (its memberships).
+model Game {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  status    GameStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+
+  members  CommunityMembership[]
+  managers GameManagerAssignment[]
+  teams    Team[]
+}
+
+model CommunityMembership {
+  userId   String
+  gameId   String
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@index([gameId])
+}
+
+/// FREQ32/52: Game Manager role scoped to one game.
+model GameManagerAssignment {
+  userId       String
+  gameId       String
+  assignedById String?
+  createdAt    DateTime @default(now())
+
+  user       User  @relation("ManagedBy", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User? @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  game       Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@index([gameId])
+}
+
+model Team {
+  id            String     @id @default(cuid())
+  gameId        String
+  name          String
+  status        TeamStatus @default(SHELL)
+  /// null = unlimited (FREQ57)
+  maxRosterSize Int?
+  season        String?
+  createdAt     DateTime   @default(now())
+
+  game     Game             @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  members  TeamMembership[]
+  requests RosterRequest[]
+
+  @@unique([gameId, name])
+}
+
+model TeamMembership {
+  teamId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+  @@index([userId])
+}
+
+/// FREQ55: a Community Member's request to join a Team, decided by a Game Manager.
+model RosterRequest {
+  id          String              @id @default(cuid())
+  teamId      String
+  userId      String
+  status      RosterRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  decidedAt   DateTime?
+  decidedById String?
+
+  team      Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User  @relation("Requester", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy User? @relation("Decider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([teamId, status])
+  @@index([userId, status])
 }

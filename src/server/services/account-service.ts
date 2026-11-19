@@ -187,7 +187,7 @@ export async function updateOwnProfile(userId: string, input: unknown) {
 
 /**
  * FREQ9 profile of another user. Full name and email are only included when the viewer may see PII
- * (baseline C6); otherwise only first name. Memberships and Discord name arrive in Phases 2 and 5.
+ * (baseline C6); otherwise only first name.
  */
 export async function getPublicProfile(username: string, opts: { includePii: boolean }) {
   const user = await db.user.findUnique({
