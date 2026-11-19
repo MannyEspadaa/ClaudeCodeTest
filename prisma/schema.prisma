@@ -50,6 +50,10 @@ model User {
   events             Event[]
   scheduleEntries    ScheduleEntry[]
   announcements      Announcement[]
+  vods               Vod[]
+  statSheets         StatSheet[]
+  statLines          PlayerStatLine[]
+  comments           Comment[]
 }
 
 model Session {
@@ -129,6 +133,7 @@ model Game {
   events          Event[]
   scheduleEntries ScheduleEntry[]
   announcements   Announcement[]
+  statDefinitions StatDefinition[]
 }
 
 model CommunityMembership {
@@ -172,6 +177,9 @@ model Team {
   members         TeamMembership[]
   requests        RosterRequest[]
   scheduleEntries ScheduleEntry[]
+  vods            Vod[]
+  statSheets      StatSheet[]
+  comments        Comment[]
 
   @@unique([gameId, name])
 }
@@ -260,9 +268,11 @@ model ScheduleEntry {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  game      Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  team      Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  game       Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  team       Team?       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy  User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  vods       Vod[]
+  statSheets StatSheet[]
 
   @@index([startsAt])
   @@index([teamId, startsAt])
@@ -282,4 +292,110 @@ model Announcement {
   author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+// ───────────── Phase 4: VODs, statistics, comments ─────────────
+
+/// FREQ29, 45. v1 stores links (YouTube, Twitch, other); see baseline AD9.
+model Vod {
+  id              String   @id @default(cuid())
+  teamId          String
+  scheduleEntryId String?
+  title           String
+  url             String
+  addedById       String?
+  createdAt       DateTime @default(now())
+
+  team          Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  scheduleEntry ScheduleEntry? @relation(fields: [scheduleEntryId], references: [id], onDelete: SetNull)
+  addedBy       User?          @relation(fields: [addedById], references: [id], onDelete: SetNull)
+
+  @@index([teamId, createdAt])
+}
+
+enum StatLevel {
+  PLAYER
+  TEAM
+}
+
+enum StatKind {
+  INPUT
+  DERIVED
+}
+
+/// FREQ61: per-game stat fields; DERIVED ones are formulas over INPUT keys of the same level (FREQ43).
+model StatDefinition {
+  id        String    @id @default(cuid())
+  gameId    String
+  key       String
+  label     String
+  level     StatLevel
+  kind      StatKind
+  formula   String?
+  /// Decimal places shown for this stat.
+  precision Int       @default(0)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, key])
+}
+
+/// FREQ30: one set of stats for a team's match/scrim, with team-level values and per-player lines.
+model StatSheet {
+  id              String   @id @default(cuid())
+  teamId          String
+  scheduleEntryId String?
+  title           String
+  playedAt        DateTime
+  /// key → number (inputs and derived)
+  teamValues      Json     @default("{}")
+  enteredById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  team          Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  scheduleEntry ScheduleEntry?   @relation(fields: [scheduleEntryId], references: [id], onDelete: SetNull)
+  enteredBy     User?            @relation(fields: [enteredById], references: [id], onDelete: SetNull)
+  lines         PlayerStatLine[]
+
+  @@index([teamId, playedAt])
+}
+
+model PlayerStatLine {
+  sheetId String
+  userId  String
+  /// key → number (inputs and derived)
+  values  Json
+
+  sheet StatSheet @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sheetId, userId])
+  @@index([userId])
+}
+
+enum CommentTarget {
+  VOD
+  STAT_SHEET
+}
+
+/// FREQ31 (GM analysis comments) and FREQ62 (player replies, one level deep).
+model Comment {
+  id         String        @id @default(cuid())
+  teamId     String
+  targetType CommentTarget
+  targetId   String
+  parentId   String?
+  authorId   String?
+  body       String
+  createdAt  DateTime      @default(now())
+
+  team    Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  author  User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  parent  Comment?  @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("Replies")
+
+  @@index([targetType, targetId, createdAt])
 }

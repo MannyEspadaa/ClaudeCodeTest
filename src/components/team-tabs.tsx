@@ -1,12 +1,14 @@
 import Link from "next/link";
 
-export function TeamTabs({ teamId, active }: { teamId: string; active: "roster" | "schedule" }) {
+export function TeamTabs({ teamId, active }: { teamId: string; active: "roster" | "schedule" | "vods" | "stats" }) {
   const tabs = [
     { key: "roster", label: "Roster", href: `/teams/${teamId}` },
     { key: "schedule", label: "Schedule", href: `/teams/${teamId}/schedule` },
+    { key: "vods", label: "VODs", href: `/teams/${teamId}/vods` },
+    { key: "stats", label: "Stats", href: `/teams/${teamId}/stats` },
   ];
   return (
-    <nav aria-label="Team sections" className="flex gap-2 border-b border-border">
+    <nav aria-label="Team sections" className="flex gap-1 overflow-x-auto border-b border-border">
       {tabs.map((t) => (
         <Link
           key={t.key}

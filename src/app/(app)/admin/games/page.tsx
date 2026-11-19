@@ -34,7 +34,10 @@ export default async function AdminGamesPage() {
                       </Link>
                       {g.status === "ARCHIVED" && <Badge tone="danger">Archived</Badge>}
                       <span className="text-sm text-muted">
-                        {g.memberCount} members · {g.teamCount} teams
+                        {g.memberCount} members · {g.teamCount} teams ·{" "}
+                        <Link href={`/admin/games/${g.id}/stats`} className="text-accent underline">
+                          Stat setup
+                        </Link>
                       </span>
                     </div>
                     <ActionButton
