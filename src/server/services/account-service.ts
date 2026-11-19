@@ -7,6 +7,8 @@ import { hashPassword, verifyAgainstDummy, verifyPassword } from "@/server/auth/
 import { generateToken, hashToken } from "@/server/auth/tokens";
 import { createSession, invalidateAllSessions } from "@/server/auth/session";
 import { sendMail } from "@/server/mail/mailer";
+import { formatDateTime } from "@/lib/time";
+import { refreshSuspension } from "./moderation-service";
 import { passwordResetEmail, verificationEmail } from "@/server/mail/templates";
 import { parseOrThrow } from "@/server/validation/parse";
 import {
@@ -131,7 +133,12 @@ export async function login(input: unknown) {
   }
   if (!(await verifyPassword(user.passwordHash, password))) throw invalid;
   if (user.status === "SUSPENDED") {
-    throw new ServiceError("SUSPENDED", "This account is suspended. Contact an administrator.");
+    // Timed suspensions end on their own (FREQ59).
+    const current = await refreshSuspension(user.id);
+    if (current || (await db.user.findUniqueOrThrow({ where: { id: user.id } })).status === "SUSPENDED") {
+      const until = current?.until ? ` until ${formatDateTime(current.until)}` : "";
+      throw new ServiceError("SUSPENDED", `This account is suspended${until}. Contact an administrator.`);
+    }
   }
   if (!user.emailVerifiedAt) {
     throw new ServiceError("EMAIL_NOT_VERIFIED", "Verify your email before logging in.");

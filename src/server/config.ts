@@ -8,6 +8,8 @@ const schema = z.object({
   MAIL_OUTBOX_DIR: z.string().default(".mail-outbox"),
   MAIL_FROM: z.string().default("Esports Hub <no-reply@example.edu>"),
   SMTP_URL: z.string().optional(),
+  DISCORD_CLIENT_ID: z.string().optional(),
+  DISCORD_CLIENT_SECRET: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -19,6 +21,7 @@ export type AppConfig = {
   mailOutboxDir: string;
   mailFrom: string;
   smtpUrl?: string;
+  discord: { clientId: string; clientSecret: string } | null;
   isProduction: boolean;
 };
 
@@ -40,6 +43,7 @@ export function getConfig(): AppConfig {
     mailOutboxDir: env.MAIL_OUTBOX_DIR,
     mailFrom: env.MAIL_FROM,
     smtpUrl: env.SMTP_URL || undefined,
+    discord: env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET ? { clientId: env.DISCORD_CLIENT_ID, clientSecret: env.DISCORD_CLIENT_SECRET } : null,
     isProduction: env.NODE_ENV === "production",
   };
   return cached;

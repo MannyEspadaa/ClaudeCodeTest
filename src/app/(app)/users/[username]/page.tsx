@@ -6,6 +6,7 @@ import { can } from "@/server/authz/policy";
 import { db } from "@/server/db";
 import { getPublicProfile } from "@/server/services/account-service";
 import { getMemberships } from "@/server/services/community-service";
+import { getDiscordUsername } from "@/server/services/discord-service";
 import { MembershipList } from "@/components/memberships";
 import { Section } from "@/components/ui";
 
@@ -24,6 +25,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
 
   const profile = await getPublicProfile(username, { includePii: can(ctx, "profile.viewPii", resource) });
   if (!profile) notFound();
+  const discord = await getDiscordUsername(target.id);
   const linkTeams = (t: { id: string; game: { id: string } }) => can(ctx, "team.view", { type: "team", teamId: t.id, gameId: t.game.id });
 
   return (
@@ -37,6 +39,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
           <>
             <dt className="text-muted">Email</dt>
             <dd>{profile.email}</dd>
+          </>
+        )}
+        {discord && (
+          <>
+            <dt className="text-muted">Discord</dt>
+            <dd>{discord}</dd>
           </>
         )}
         <dt className="text-muted">Member since</dt>

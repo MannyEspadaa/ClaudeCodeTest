@@ -54,6 +54,10 @@ model User {
   statSheets         StatSheet[]
   statLines          PlayerStatLine[]
   comments           Comment[]
+  suspensions        Suspension[]            @relation("Suspended")
+  suspensionsIssued  Suspension[]            @relation("SuspendedBy")
+  discord            DiscordLink?
+  calendarFeed       CalendarFeedToken?
 }
 
 model Session {
@@ -398,4 +402,41 @@ model Comment {
   replies Comment[] @relation("Replies")
 
   @@index([targetType, targetId, createdAt])
+}
+
+// ───────────── Phase 5: moderation and integrations ─────────────
+
+/// FREQ36, 59. until = null means indefinite.
+model Suspension {
+  id          String    @id @default(cuid())
+  userId      String
+  reason      String
+  until       DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  liftedAt    DateTime?
+
+  user      User  @relation("Suspended", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("SuspendedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+/// FREQ42, 66. Only the identity is stored; OAuth tokens are discarded after the link.
+model DiscordLink {
+  userId          String   @id
+  discordId       String   @unique
+  discordUsername String
+  linkedAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// FREQ40, 65. Private iCal feed; only the SHA-256 of the URL token is stored.
+model CalendarFeedToken {
+  userId    String   @id
+  tokenHash String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
