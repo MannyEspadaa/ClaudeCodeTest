@@ -1,7 +1,6 @@
 import { afterAll, beforeEach } from "vitest";
 import { db } from "@/server/db";
 import { memoryOutbox } from "@/server/mail/mailer";
-import { resetRateLimits } from "@/server/rate-limit";
 
 if (!process.env.DATABASE_URL?.includes("test")) {
   throw new Error("Integration tests must run against a test database (DATABASE_URL should contain 'test').");
@@ -11,7 +10,6 @@ let tables: string | undefined;
 
 beforeEach(async () => {
   memoryOutbox.length = 0;
-  resetRateLimits();
   if (!tables) {
     const rows = await db.$queryRaw<{ tablename: string }[]>`
       SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;

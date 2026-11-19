@@ -10,7 +10,7 @@ import { guard } from "./page-guard";
 
 /** Shared body of the "enter stats" and "edit stats" pages. */
 export async function SheetFormPage({ ctx, teamId, sheetId }: { ctx: AuthzContext; teamId: string; sheetId?: string }) {
-  const res = await guard(async () => ({ form: await getSheetForm(ctx, teamId, sheetId), entries: await linkableEntries(teamId) }));
+  const res = await guard(async () => ({ form: await getSheetForm(ctx, teamId, sheetId), entries: await linkableEntries(ctx, teamId) }));
   if (res.forbidden) return <NoAccess what="stat entry for this team" />;
   const { form, entries } = res.data;
   return (

@@ -14,7 +14,9 @@
     "test:e2e": "playwright test --trace off",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "admin:create": "tsx --tsconfig tsconfig.json scripts/create-admin.ts"
+    "admin:create": "tsx --tsconfig tsconfig.json scripts/create-admin.ts",
+    "test:load": "dotenv -e .env.e2e -o -- tsx --tsconfig tsconfig.json scripts/load-test.ts",
+    "db:seed": "tsx --tsconfig tsconfig.json scripts/seed.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
@@ -28,6 +30,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",

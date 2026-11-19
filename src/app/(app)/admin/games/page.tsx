@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireUser } from "@/server/auth/current-user";
+import { requireAdmin } from "@/server/auth/current-user";
 import { listGames } from "@/server/services/game-service";
 import { archiveGameAction, createGameAction, renameGameAction } from "@/app/actions/admin";
 import { ActionButton } from "@/components/action-button";
 import { ServerForm } from "@/components/server-form";
-import { Badge, Empty, PageHeader, Section } from "@/components/ui";
+import { Badge, Empty, NoAccess, PageHeader, Section } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Games · Admin · Esports Hub" };
 
 // FREQ50: create, rename and archive games.
 export default async function AdminGamesPage() {
-  const { ctx } = await requireUser();
-  const games = await listGames(ctx, { includeArchived: true });
+  const admin = await requireAdmin();
+  if (!admin) return <NoAccess what="the admin area" />;
+  const games = await listGames(admin.ctx, { includeArchived: true });
   return (
     <>
       <PageHeader title="Games" subtitle="Each game has one community. Archived games are read-only." />

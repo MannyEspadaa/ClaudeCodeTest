@@ -1,0 +1,36 @@
+# Local/production-like stack: `docker compose up --build`, then open http://localhost:3000
+# Set secrets in a .env file next to this one (see .env.example); never commit it.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: esports
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-esports}
+      POSTGRES_DB: esports_hub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esports"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://esports:${POSTGRES_PASSWORD:-esports}@db:5432/esports_hub
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/New_York}
+      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-example.edu}
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-console}
+      MAIL_FROM: ${MAIL_FROM:-Esports Hub <no-reply@example.edu>}
+      SMTP_URL: ${SMTP_URL:-}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+
+volumes:
+  pgdata:

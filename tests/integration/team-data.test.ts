@@ -88,6 +88,7 @@ describe("stat sheets and summaries (FREQ30, 43, 46)", () => {
     const summary = await stats.getTeamStats(w.p2, w.team.id);
     expect(summary.teamSummary.games).toBe(2);
     expect(summary.teamSummary.totals.win_rate).toBe(50);
+    expect(summary.teamSummary.averages).toMatchObject({ win_rate: 50, diff: -1 }); // (4 + -6) / 2
     expect(summary.players).toHaveLength(1); // bravo's blank line was skipped
     expect(summary.players[0]).toMatchObject({ games: 2, totals: { kills: 30, deaths: 10, kda: 3.5 } });
     expect(summary.players[0].averages.kills).toBe(15);

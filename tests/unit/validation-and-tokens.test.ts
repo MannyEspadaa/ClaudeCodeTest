@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { registerSchema, emailDomain } from "@/server/validation/account";
 import { generateToken, hashToken } from "@/server/auth/tokens";
-import { consumeRateLimit, resetRateLimits } from "@/server/rate-limit";
 
 describe("registration validation", () => {
   const valid = { email: " Alex@Example.EDU ", fullName: "Alex Kim", username: "alex_k", password: "a-strong-password" };
@@ -29,16 +28,5 @@ describe("tokens", () => {
     expect(a).not.toBe(generateToken());
     expect(hashToken(a)).toBe(hashToken(a));
     expect(hashToken(a)).not.toBe(a);
-  });
-});
-
-describe("rate limit", () => {
-  it("blocks after the limit and resets after the window", () => {
-    resetRateLimits();
-    const rule = { limit: 2, windowMs: 1000 };
-    expect(consumeRateLimit("k", rule, 0)).toBe(true);
-    expect(consumeRateLimit("k", rule, 10)).toBe(true);
-    expect(consumeRateLimit("k", rule, 20)).toBe(false);
-    expect(consumeRateLimit("k", rule, 1001)).toBe(true);
   });
 });

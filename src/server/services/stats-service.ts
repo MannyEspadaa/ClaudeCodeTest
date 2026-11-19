@@ -302,7 +302,13 @@ export async function getTeamStats(actor: AuthzContext, teamId: string) {
     teamSummary: {
       games: teamInputs.length,
       totals: computeRow(defs, "TEAM", teamTotals, teamInputs.length),
-      averages: Object.fromEntries(Object.entries(teamTotals).map(([k, v]) => [k, v / Math.max(1, teamInputs.length)])),
+      // Derived stats over per-match averages (games = 1), e.g. average score diff.
+      averages: computeRow(
+        defs,
+        "TEAM",
+        Object.fromEntries(Object.entries(teamTotals).map(([k, v]) => [k, v / Math.max(1, teamInputs.length)])),
+        1,
+      ),
     },
     players,
   };

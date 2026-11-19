@@ -20,7 +20,7 @@ export default async function VodsPage({ params }: { params: Promise<{ teamId: s
   const res = await guard(() => listVods(ctx, teamId));
   if (res.forbidden) return <NoAccess what="this team's VODs" />;
   const { team, vods, canManage } = res.data;
-  const entries = canManage ? await linkableEntries(teamId) : [];
+  const entries = canManage ? await linkableEntries(ctx, teamId) : [];
   const host = new URL(getConfig().appUrl).hostname;
 
   return (

@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/server/auth/current-user";
 import { listUsers } from "@/server/services/role-service";
-import { Badge, Empty, PageHeader } from "@/components/ui";
+import { Badge, Empty, NoAccess, PageHeader } from "@/components/ui";
+import { guard } from "@/app/page-guard";
 
 export const metadata: Metadata = { title: "Users · Admin · Esports Hub" };
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const { q, page } = await searchParams;
   const { ctx } = await requireUser();
-  const res = await listUsers(ctx, { q, page: Number(page) || 1 });
+  const loaded = await guard(() => listUsers(ctx, { q, page: Number(page) || 1 }));
+  if (loaded.forbidden) return <NoAccess what="the admin area" />;
+  const res = loaded.data;
   const pageLink = (p: number) => `/admin/users?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`;
 
   return (

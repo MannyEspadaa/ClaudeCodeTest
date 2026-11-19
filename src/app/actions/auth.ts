@@ -18,7 +18,7 @@ const TOO_MANY: FormState = { status: "error", message: "Too many attempts. Plea
 
 export async function registerAction(_prev: FormState, form: FormData): Promise<FormState> {
   const values = pick(form, "email", "fullName", "username");
-  if (!consumeRateLimit(`register:${await clientIp()}`, RATE_LIMITS.registerPerIp)) return { ...TOO_MANY, values };
+  if (!(await consumeRateLimit(`register:${await clientIp()}`, RATE_LIMITS.registerPerIp))) return { ...TOO_MANY, values };
   try {
     await accounts.register({ ...values, password: String(form.get("password") ?? "") });
   } catch (err) {
@@ -32,8 +32,8 @@ export async function loginAction(_prev: FormState, form: FormData): Promise<For
   const email = values.email.trim().toLowerCase();
   const ip = await clientIp();
   if (
-    !consumeRateLimit(`login:ip:${ip}`, RATE_LIMITS.loginPerIp) ||
-    !consumeRateLimit(`login:email:${email}`, RATE_LIMITS.loginPerAccount)
+    !(await consumeRateLimit(`login:ip:${ip}`, RATE_LIMITS.loginPerIp)) ||
+    !(await consumeRateLimit(`login:email:${email}`, RATE_LIMITS.loginPerAccount))
   ) {
     return { ...TOO_MANY, values };
   }
@@ -56,7 +56,7 @@ export async function logoutAction(): Promise<void> {
 
 export async function resendVerificationAction(_prev: FormState, form: FormData): Promise<FormState> {
   const values = pick(form, "email");
-  if (!consumeRateLimit(`email:${values.email.trim().toLowerCase()}`, RATE_LIMITS.emailPerAddress)) {
+  if (!(await consumeRateLimit(`email:${values.email.trim().toLowerCase()}`, RATE_LIMITS.emailPerAddress))) {
     return { ...TOO_MANY, values };
   }
   try {
@@ -69,7 +69,7 @@ export async function resendVerificationAction(_prev: FormState, form: FormData)
 
 export async function forgotPasswordAction(_prev: FormState, form: FormData): Promise<FormState> {
   const values = pick(form, "email");
-  if (!consumeRateLimit(`email:${values.email.trim().toLowerCase()}`, RATE_LIMITS.emailPerAddress)) {
+  if (!(await consumeRateLimit(`email:${values.email.trim().toLowerCase()}`, RATE_LIMITS.emailPerAddress))) {
     return { ...TOO_MANY, values };
   }
   try {

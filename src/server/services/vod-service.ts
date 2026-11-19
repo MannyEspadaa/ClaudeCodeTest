@@ -61,8 +61,9 @@ export async function getVod(actor: AuthzContext, vodId: string) {
   return { vod, team, canManage: can(actor, "teamData.manage", teamResource(team)) };
 }
 
-/** Matches/scrims a VOD or stat sheet can be linked to. */
-export async function linkableEntries(teamId: string) {
+/** Matches/scrims a VOD or stat sheet can be linked to (managers only: includes team-only entries). */
+export async function linkableEntries(actor: AuthzContext, teamId: string) {
+  await teamWith(actor, teamId, "teamData.manage");
   return db.scheduleEntry.findMany({
     where: { teamId, type: { in: ["MATCH", "SCRIM"] }, startsAt: { lt: new Date(Date.now() + 86_400_000) } },
     orderBy: { startsAt: "desc" },

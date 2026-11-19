@@ -440,3 +440,14 @@ model CalendarFeedToken {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// ───────────── Phase 6: shared rate limiting ─────────────
+
+/// NFREQ16 fixed-window counters, shared by every app instance.
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

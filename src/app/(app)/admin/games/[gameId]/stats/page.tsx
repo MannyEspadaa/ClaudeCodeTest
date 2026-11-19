@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireUser } from "@/server/auth/current-user";
+import { requireAdmin } from "@/server/auth/current-user";
 import { listDefinitions } from "@/server/services/stats-service";
 import { requireGame } from "@/server/services/game-service";
 import { addTemplateAction, createDefinitionAction, deleteDefinitionAction, updateDefinitionAction } from "@/app/actions/team-data";
 import { guard } from "@/app/page-guard";
 import { ActionButton } from "@/components/action-button";
 import { ServerForm } from "@/components/server-form";
-import { Badge, Empty, PageHeader, Section } from "@/components/ui";
+import { Badge, Empty, NoAccess, PageHeader, Section } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Stat setup · Admin · Esports Hub" };
 
 // FREQ61: define what each game tracks; FREQ43 formulas for calculated stats.
 export default async function StatDefsPage({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = await params;
-  await requireUser();
+  if (!(await requireAdmin())) return <NoAccess what="the admin area" />;
   const res = await guard(async () => ({ game: await requireGame(gameId), defs: await listDefinitions(gameId) }));
   if (res.forbidden) return null;
   const { game, defs } = res.data;

@@ -38,3 +38,12 @@ export async function setSessionCookie(token: string, expiresAt: Date) {
 export async function clearSessionCookie() {
   (await cookies()).delete(SESSION_COOKIE);
 }
+
+/**
+ * Layouts don't protect the pages beneath them (pages render in parallel), so every
+ * admin page calls this itself. Returns null for non-admins so the page can render NoAccess.
+ */
+export async function requireAdmin(): Promise<{ user: SessionUser; ctx: AuthzContext } | null> {
+  const res = await requireUser();
+  return res.ctx.isAdmin ? res : null;
+}

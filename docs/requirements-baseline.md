@@ -1,6 +1,14 @@
 # Esports Hub — Requirements Baseline (Phase 0)
 
-Status: **Proposed** — ambiguities resolved with recommended defaults; awaiting approval before any code is written.
+Status: **Approved and implemented** (Phases 1–6). See `traceability.md` for requirement coverage and `test-report.md` for results.
+
+### Changes made during implementation
+- **Calendar UI** is a server-rendered month grid + agenda instead of FullCalendar (faster for NFREQ8, no client bundle, accessible).
+- **Rate limiting** moved from memory to Postgres (multi-instance safe); per-IP limits raised for shared campus networks.
+- **Derived stats** are computed on read, not stored, so formula edits apply to past matches.
+- **`games`** is a built-in formula variable (number of matches) for rates like win %.
+- **iCal feed URL** is shown once at creation; only its hash is stored.
+- **Seasons** remain a free-text label on teams.
 Source documents: userContext, useCases, useCaseSpecification, useCaseDiagram, requirements (CSV).
 
 ---

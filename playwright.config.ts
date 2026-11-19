@@ -12,7 +12,17 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: { baseURL: `http://localhost:${PORT}`, trace: "off" },
-  projects: [{ name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } }],
+  // NFREQ15: Chromium always; Firefox and WebKit (Safari engine) when E2E_ALL_BROWSERS=1 (CI).
+  projects: [
+    { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
+    ...(process.env.E2E_ALL_BROWSERS
+      ? [
+          { name: "desktop-firefox", use: { ...devices["Desktop Firefox"] } },
+          { name: "desktop-webkit", use: { ...devices["Desktop Safari"] } },
+          { name: "desktop-edge", use: { ...devices["Desktop Edge"], channel: "msedge" } },
+        ]
+      : []),
+  ],
   webServer: {
     // Migrated e2e database (tests use unique users, no reset needed), production build (NFREQ5 desktop experience is what we test).
     command:

@@ -38,8 +38,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run test:integration
-      - run: npx playwright install --with-deps chromium
+      # NFREQ15: Chromium, Firefox, WebKit (Safari engine) and Edge.
+      - run: npx playwright install --with-deps chromium firefox webkit msedge
       - run: npm run test:e2e
+        env:
+          E2E_ALL_BROWSERS: "1"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
