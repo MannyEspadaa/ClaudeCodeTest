@@ -1,0 +1,86 @@
+// Phase 1 schema: identity, sessions, email tokens, audit log.
+// Later phases add games, communities, teams, events, schedules and team data.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  REMOVED
+}
+
+enum EmailTokenPurpose {
+  VERIFY_EMAIL
+  PASSWORD_RESET
+}
+
+model User {
+  id              String     @id @default(cuid())
+  /// Always stored lowercased. School email; changeable only by an Admin (baseline §3).
+  email           String     @unique
+  fullName        String
+  /// Display form as the user typed it.
+  username        String
+  /// Lowercased username, used for case-insensitive uniqueness and lookup.
+  usernameKey     String     @unique
+  passwordHash    String
+  emailVerifiedAt DateTime?
+  status          UserStatus @default(ACTIVE)
+  isAdmin         Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  sessions    Session[]
+  emailTokens EmailToken[]
+  auditEvents AuditLog[]   @relation("AuditActor")
+}
+
+model Session {
+  /// SHA-256 of the session token; the raw token only lives in the cookie.
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmailToken {
+  id        String            @id @default(cuid())
+  userId    String
+  purpose   EmailTokenPurpose
+  /// SHA-256 of the emailed token.
+  tokenHash String            @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+/// NFREQ12: role changes, suspensions, removals and deletions are recorded here.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String
+  details    Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}

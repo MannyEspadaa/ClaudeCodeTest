@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: esports
+          POSTGRES_PASSWORD: esports
+          POSTGRES_DB: esports_hub_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U esports" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Create env files
+        run: |
+          cp .env.example .env
+          sed 's/esports_hub"/esports_hub_test"/; s/MAIL_TRANSPORT="file"/MAIL_TRANSPORT="memory"/' .env.example > .env.test
+          sed 's/esports_hub"/esports_hub_e2e"/; s#MAIL_OUTBOX_DIR=".mail-outbox"#MAIL_OUTBOX_DIR=".mail-outbox/e2e"#; s#localhost:3000#localhost:3100#; s/RATE_LIMIT_SCALE="1"/RATE_LIMIT_SCALE="100"/' .env.example > .env.e2e
+          PGPASSWORD=esports psql -h localhost -U esports -d esports_hub_test -c "CREATE DATABASE esports_hub_e2e"
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run test:integration
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report

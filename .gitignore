@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local mail outbox (dev/e2e)
+/.mail-outbox
+/test-results
+/playwright-report
+!.env.example
